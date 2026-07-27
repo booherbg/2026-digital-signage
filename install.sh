@@ -104,6 +104,14 @@ launchctl unload "$UPDATE_PLIST" 2>/dev/null || true
 launchctl load "$UPDATE_PLIST"
 
 # Status agent: screenshot + heartbeat to Drive _status/ every 10 minutes.
+# Wrapped in an .app bundle because TCC won't attribute Screen Recording to a
+# bare bash-under-launchd process (silent wallpaper-only screenshots). The
+# applet gets a real TCC identity: macOS prompts once, the grant sticks.
+STATUS_APP="$HOME/Applications/SignageStatus.app"
+mkdir -p "$HOME/Applications"
+rm -rf "$STATUS_APP"
+osacompile -e "do shell script \"/bin/bash '${DIR}/status.sh'\"" -o "$STATUS_APP"
+
 STATUS_PLIST="$HOME/Library/LaunchAgents/com.farm.signage.status.plist"
 cat > "$STATUS_PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -113,8 +121,7 @@ cat > "$STATUS_PLIST" <<EOF
   <key>Label</key><string>com.farm.signage.status</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
-    <string>${DIR}/status.sh</string>
+    <string>${STATUS_APP}/Contents/MacOS/applet</string>
   </array>
   <key>RunAtLoad</key><true/>
   <key>StartInterval</key><integer>600</integer>

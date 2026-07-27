@@ -94,8 +94,12 @@ the drive. Then set `~/.signage-remote` to the folder path inside it, e.g.
 - Image cache: `~/.signage-cache` (auto-pruned after 30 days).
 - **Proof of life**: every 10 min a screenshot of the TV output plus a status
   text lands in Drive at `Foyer Signage/_status/` — check it from anywhere.
-  If `latest.png` only shows the desktop wallpaper, grant Screen Recording to
-  bash/Terminal once: System Settings → Privacy & Security → Screen Recording
-  (macOS prompts the first time `status.sh` runs).
+  Screenshots run via `~/Applications/SignageStatus.app` (built by
+  install.sh) because macOS TCC ignores Screen Recording grants for bare
+  bash-under-launchd. On first run macOS prompts to allow **SignageStatus**
+  screen recording — grant it once (System Preferences → Security & Privacy →
+  Privacy → Screen Recording) and reboot if the next `latest.png` is still
+  wallpaper-only. Even ungranted, `_status/current-slide.*` and the
+  `now playing:` line in `status.txt` prove what the sign is showing.
 - Filenames starting with `_` or `.` are never played — safe place to park
   drafts in the folder root (`_draft-holiday.jpg`).
