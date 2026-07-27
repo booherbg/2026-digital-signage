@@ -92,7 +92,7 @@ the drive. Then set `~/.signage-remote` to the folder path inside it, e.g.
   "waiting for content" card. Drive offline just keeps playing the last
   synced content.
 - Image cache: `~/.signage-cache` (auto-pruned after 30 days).
-- **Proof of life**: every 10 min a screenshot of the TV output plus a status
+- **Proof of life**: every 60 s a screenshot of the TV output plus a status
   text lands in Drive at `Foyer Signage/_status/` — check it from anywhere.
   Screenshots run via `~/Applications/SignageStatus.app` (built by
   install.sh) because macOS TCC ignores Screen Recording grants for bare

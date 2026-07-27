@@ -1,7 +1,7 @@
 #!/bin/bash
 # Proof-of-life: screenshot what the TV is showing + a short status text,
 # uploaded to the Drive folder under _status/ (subfolders are never played).
-# launchd runs this every 10 minutes. Best-effort: any failure exits quietly.
+# launchd runs this every 60 seconds. Best-effort: any failure exits quietly.
 set -u
 
 # Remote precedence: $SIGNAGE_REMOTE env > ~/.signage-remote file > default.

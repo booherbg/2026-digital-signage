@@ -103,7 +103,7 @@ EOF
 launchctl unload "$UPDATE_PLIST" 2>/dev/null || true
 launchctl load "$UPDATE_PLIST"
 
-# Status agent: screenshot + heartbeat to Drive _status/ every 10 minutes.
+# Status agent: screenshot + heartbeat to Drive _status/ every 60 seconds.
 # Wrapped in an .app bundle because TCC won't attribute Screen Recording to a
 # bare bash-under-launchd process (silent wallpaper-only screenshots). The
 # applet gets a real TCC identity: macOS prompts once, the grant sticks.
@@ -124,7 +124,7 @@ cat > "$STATUS_PLIST" <<EOF
     <string>${STATUS_APP}/Contents/MacOS/applet</string>
   </array>
   <key>RunAtLoad</key><true/>
-  <key>StartInterval</key><integer>600</integer>
+  <key>StartInterval</key><integer>60</integer>
 </dict>
 </plist>
 EOF
