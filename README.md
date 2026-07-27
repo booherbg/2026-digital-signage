@@ -28,39 +28,50 @@ All keys optional; missing/broken config falls back to defaults (12s, no
 shuffle, hard cut, 24/7). Outside `hours` the screen shows black.
 `hours` may cross midnight (`"on": "18:00", "off": "02:00"`).
 
-## One-time Mac setup
+## One-time Mac setup (fresh machine, nothing pre-installed)
 
-1. **Google Drive for Desktop**: sign in (use a dedicated account like
-   `signage@`), set the folder to **Mirror** (not stream) so content survives
-   network outages. The player auto-finds `Foyer Signage` in My Drive or a
-   Shared drive; pass a path to `install.sh` to override.
-2. **Never sleep**: `sudo pmset -a disablesleep 1` (required for clamshell
-   with no keyboard). Also System Settings → Lock Screen → display off:
-   Never; screen saver: off.
-3. **Survive power failure**: System Settings → Energy Saver → "Start up
-   automatically after a power failure". Enable **auto-login** for this user
-   (FileVault must be off for auto-login to work).
-4. **Display**: BetterDisplay (or Displays settings) → rotation 270° for the
-   portrait TV. If the laptop ever runs lid-open, drag the menu bar onto the
-   TV in Displays → Arrange so the TV is the primary display — the player
-   fullscreens on the primary. In clamshell this is automatic. These settings
-   persist across reboots.
-5. **Python (optional but recommended)**: the stock `/usr/bin/python3` works
-   but its Tk 8.5 forces 256-color GIF rendering. Installing Python 3 from
-   python.org (bundles Tk 8.6+) gets full-quality PNG; `install.sh` picks the
-   best python it finds automatically.
-6. **Install the player**:
+```sh
+git clone git@github.com:booherbg/2026-digital-signage.git
+cd 2026-digital-signage
+./setup.sh
+```
 
-   ```sh
-   ./install.sh                      # auto-detect Drive folder
-   ./install.sh "/path/to/folder"    # or explicit
-   ```
+`setup.sh` assumes a bare Mac and walks every dependency:
 
-   Starts immediately, at every login, and relaunches within 10s if it dies.
+1. Installs Xcode Command Line Tools if missing (git/python3/tkinter) — the
+   OS shows a dialog; re-run `./setup.sh` when it finishes.
+2. Verifies python3 + tkinter.
+3. Installs **rclone** if missing (official installer, needs sudo). We use
+   rclone instead of Google Drive for Desktop because Drive Desktop requires
+   macOS 13+ and this machine runs 12.x. rclone's one-time browser auth
+   stores a refresh token that survives reboots indefinitely.
+4. Creates the `gdrive:` remote (one-time Google sign-in in a browser — use a
+   dedicated account like `signage@`).
+5. Runs `install.sh`, which installs TWO launchd agents:
+   - `com.farm.signage` — the player (RunAtLoad + KeepAlive, restarts in 10s)
+   - `com.farm.signage.sync` — `sync.sh` every 60s: `gdrive:Foyer Signage` →
+     `~/Signage`. Never deletes local content when the remote is unreachable.
+
+Then finish the manual settings `setup.sh` prints at the end:
+
+- `sudo pmset -a disablesleep 1` (clamshell without a keyboard)
+- Lock Screen → display off **Never**; screen saver off
+- Energy Saver → **start up after power failure**; auto-login (FileVault off)
+- BetterDisplay/Displays → TV rotation 270°; TV as **primary** display (drag
+  the menu bar onto it in Arrange — only matters lid-open; clamshell is
+  automatic). All persist across reboots.
+- Optional: Python 3 from python.org (Tk 8.6+) for full-color PNG rendering
+  instead of stock Tk 8.5's 256-color GIF; `install.sh` auto-picks the best
+  python present.
+
+Custom remote/folder: `SIGNAGE_REMOTE="gdrive:Some Folder" ./sync.sh` (edit
+the plist to make it permanent), or `./install.sh "/path/to/folder"` to point
+the player elsewhere.
 
 ## Operations
 
-- Logs + 5-minute heartbeat: `~/signage.log` (rotates at 1 MB).
+- Logs + 5-minute heartbeat: `~/signage.log`; sync log: `~/signage-sync.log`
+  (both rotate at 1 MB).
 - Stop: `launchctl unload ~/Library/LaunchAgents/com.farm.signage.plist`
 - Quit once (it will restart unless unloaded): Cmd-Q.
 - Bad images are skipped and logged, never fatal. Empty folder shows a

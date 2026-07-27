@@ -45,5 +45,29 @@ EOF
 
 launchctl unload "$PLIST" 2>/dev/null || true
 launchctl load "$PLIST"
-echo "Installed and started. Logs: ~/signage.log"
-echo "Stop with: launchctl unload $PLIST"
+
+# Sync agent: pulls the Drive folder to ~/Signage every 60s via rclone.
+# Harmless if rclone isn't set up yet (sync.sh exits quietly).
+SYNC_PLIST="$HOME/Library/LaunchAgents/com.farm.signage.sync.plist"
+cat > "$SYNC_PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.farm.signage.sync</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>${DIR}/sync.sh</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>StartInterval</key><integer>60</integer>
+  <key>StandardErrorPath</key><string>${HOME}/signage-sync.log</string>
+</dict>
+</plist>
+EOF
+launchctl unload "$SYNC_PLIST" 2>/dev/null || true
+launchctl load "$SYNC_PLIST"
+
+echo "Installed and started. Logs: ~/signage.log, ~/signage-sync.log"
+echo "Stop with: launchctl unload $PLIST $SYNC_PLIST"
