@@ -1,0 +1,6 @@
+{
+  "seconds_per_slide": 12,
+  "shuffle": false,
+  "transition": "fade",
+  "hours": {"on": "06:30", "off": "22:00"}
+}

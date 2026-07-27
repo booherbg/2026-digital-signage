@@ -1,0 +1,49 @@
+#!/bin/bash
+# Install the signage player as a launchd agent: starts at login, relaunches
+# on crash. Run once from the repo directory: ./install.sh [content-folder]
+set -euo pipefail
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+PLIST="$HOME/Library/LaunchAgents/com.farm.signage.plist"
+FOLDER="${1:-}"
+
+# Prefer a python whose Tk is 8.6+ (PNG support, better photo quality);
+# fall back to any python3 with tkinter.
+PY=""
+for cand in /usr/local/bin/python3 /opt/homebrew/bin/python3 \
+            /Library/Frameworks/Python.framework/Versions/Current/bin/python3 \
+            /usr/bin/python3; do
+  [ -x "$cand" ] || continue
+  if "$cand" -c 'import tkinter,sys; sys.exit(0 if tkinter.TkVersion>=8.6 else 1)' 2>/dev/null; then
+    PY="$cand"; break
+  fi
+  [ -z "$PY" ] && "$cand" -c 'import tkinter' 2>/dev/null && PY="$cand"
+done
+: "${PY:=/usr/bin/python3}"
+echo "Using python: $PY (Tk $("$PY" -c 'import tkinter;print(tkinter.TkVersion)' 2>/dev/null || echo '?'))"
+
+mkdir -p "$HOME/Library/LaunchAgents"
+cat > "$PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.farm.signage</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>${PY}</string>
+    <string>${DIR}/player.py</string>$([ -n "$FOLDER" ] && printf '\n    <string>%s</string>' "$FOLDER")
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardOutPath</key><string>${HOME}/signage.log</string>
+  <key>StandardErrorPath</key><string>${HOME}/signage.log</string>
+</dict>
+</plist>
+EOF
+
+launchctl unload "$PLIST" 2>/dev/null || true
+launchctl load "$PLIST"
+echo "Installed and started. Logs: ~/signage.log"
+echo "Stop with: launchctl unload $PLIST"
