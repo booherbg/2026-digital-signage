@@ -173,7 +173,8 @@ class Player:
     def scan(self):
         try:
             names = [n for n in os.listdir(self.folder)
-                     if os.path.splitext(n)[1].lower() in EXTS and not n.startswith(".")]
+                     if os.path.splitext(n)[1].lower() in EXTS
+                     and not n.startswith((".", "_"))]  # "_" = parked, never played
         except OSError as e:
             log(f"folder unreadable: {e}")
             names = []

@@ -69,5 +69,26 @@ EOF
 launchctl unload "$SYNC_PLIST" 2>/dev/null || true
 launchctl load "$SYNC_PLIST"
 
+# Status agent: screenshot + heartbeat to Drive _status/ every 10 minutes.
+STATUS_PLIST="$HOME/Library/LaunchAgents/com.farm.signage.status.plist"
+cat > "$STATUS_PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.farm.signage.status</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>${DIR}/status.sh</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>StartInterval</key><integer>600</integer>
+</dict>
+</plist>
+EOF
+launchctl unload "$STATUS_PLIST" 2>/dev/null || true
+launchctl load "$STATUS_PLIST"
+
 echo "Installed and started. Logs: ~/signage.log, ~/signage-sync.log"
 echo "Stop with: launchctl unload $PLIST $SYNC_PLIST"

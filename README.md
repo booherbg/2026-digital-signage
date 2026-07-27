@@ -78,3 +78,10 @@ the player elsewhere.
   "waiting for content" card. Drive offline just keeps playing the last
   synced content.
 - Image cache: `~/.signage-cache` (auto-pruned after 30 days).
+- **Proof of life**: every 10 min a screenshot of the TV output plus a status
+  text lands in Drive at `Foyer Signage/_status/` — check it from anywhere.
+  If `latest.png` only shows the desktop wallpaper, grant Screen Recording to
+  bash/Terminal once: System Settings → Privacy & Security → Screen Recording
+  (macOS prompts the first time `status.sh` runs).
+- Filenames starting with `_` or `.` are never played — safe place to park
+  drafts in the folder root (`_draft-holiday.jpg`).
