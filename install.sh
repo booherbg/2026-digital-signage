@@ -9,15 +9,27 @@ FOLDER="${1:-}"
 
 # Prefer a python whose Tk is 8.6+ (PNG support, better photo quality);
 # fall back to any python3 with tkinter.
+# probe() runs a python check with a 10s watchdog — a broken/half-installed
+# python (e.g. aborted brew) can hang forever on import otherwise.
+probe() {  # $1=python  $2=code
+  "$1" -c "$2" 2>/dev/null &
+  local pid=$!
+  ( sleep 10; kill -9 "$pid" 2>/dev/null ) &
+  local watchdog=$!
+  wait "$pid" 2>/dev/null
+  local rc=$?
+  kill "$watchdog" 2>/dev/null
+  return $rc
+}
 PY=""
-for cand in /usr/local/bin/python3 /opt/homebrew/bin/python3 \
-            /Library/Frameworks/Python.framework/Versions/Current/bin/python3 \
-            /usr/bin/python3; do
+for cand in /Library/Frameworks/Python.framework/Versions/Current/bin/python3 \
+            /usr/local/bin/python3 /opt/homebrew/bin/python3 /usr/bin/python3; do
   [ -x "$cand" ] || continue
-  if "$cand" -c 'import tkinter,sys; sys.exit(0 if tkinter.TkVersion>=8.6 else 1)' 2>/dev/null; then
+  echo "checking $cand ..."
+  if probe "$cand" 'import tkinter,sys; sys.exit(0 if tkinter.TkVersion>=8.6 else 1)'; then
     PY="$cand"; break
   fi
-  [ -z "$PY" ] && "$cand" -c 'import tkinter' 2>/dev/null && PY="$cand"
+  [ -z "$PY" ] && probe "$cand" 'import tkinter' && PY="$cand"
 done
 : "${PY:=/usr/bin/python3}"
 echo "Using python: $PY (Tk $("$PY" -c 'import tkinter;print(tkinter.TkVersion)' 2>/dev/null || echo '?'))"
