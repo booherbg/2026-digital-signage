@@ -16,9 +16,12 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 # Screenshot is best-effort: TCC denial must not stop the other uploads.
+# Two filenames = screencapture writes one per display (extra name is
+# ignored on single-display setups, e.g. clamshell).
 SHOT=""
-if screencapture -x "$TMP/latest.png" 2>/dev/null && [ -s "$TMP/latest.png" ]; then
+if screencapture -x "$TMP/latest.png" "$TMP/latest2.png" 2>/dev/null && [ -s "$TMP/latest.png" ]; then
   sips --resampleHeightWidthMax 1200 "$TMP/latest.png" --out "$TMP/latest.png" >/dev/null 2>&1
+  [ -s "$TMP/latest2.png" ] && sips --resampleHeightWidthMax 1200 "$TMP/latest2.png" --out "$TMP/latest2.png" >/dev/null 2>&1
   SHOT="yes"
 fi
 
@@ -40,4 +43,5 @@ if [ -n "$NOW" ] && [ -f "$DEST/$NOW" ]; then
 fi
 
 [ -n "$SHOT" ] && "$RCLONE" copyto "$TMP/latest.png" "$REMOTE/_status/latest.png" --timeout 60s 2>/dev/null
+[ -n "$SHOT" ] && [ -s "$TMP/latest2.png" ] && "$RCLONE" copyto "$TMP/latest2.png" "$REMOTE/_status/latest2.png" --timeout 60s 2>/dev/null
 "$RCLONE" copyto "$TMP/status.txt" "$REMOTE/_status/status.txt" --timeout 60s 2>/dev/null
