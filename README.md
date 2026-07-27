@@ -72,9 +72,15 @@ Then finish the manual settings `setup.sh` prints at the end:
   instead of stock Tk 8.5's 256-color GIF; `install.sh` auto-picks the best
   python present.
 
-Custom remote/folder: `SIGNAGE_REMOTE="gdrive:Some Folder" ./sync.sh` (edit
-the plist to make it permanent), or `./install.sh "/path/to/folder"` to point
-the player elsewhere.
+Custom remote/folder: `echo "gdrive:Your Folder" > ~/.signage-remote` —
+sync.sh and status.sh read that file first (no reinstall needed). Or
+`./install.sh "/path/to/folder"` to point the player elsewhere.
+
+**Shared Drive?** rclone's default remote only sees My Drive. If the content
+lives in a Shared Drive: `rclone config` → `e` (edit `gdrive`) → accept
+defaults until "Configure this as a Shared Drive (Team Drive)?" → `y` → pick
+the drive. Then set `~/.signage-remote` to the folder path inside it, e.g.
+`gdrive:Foyer Vertical`.
 
 ## Operations
 

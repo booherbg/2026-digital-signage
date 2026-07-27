@@ -5,7 +5,10 @@
 # last synced content.
 set -u
 
-REMOTE="${SIGNAGE_REMOTE:-gdrive:Foyer Signage}"
+# Remote precedence: $SIGNAGE_REMOTE env > ~/.signage-remote file > default.
+REMOTE="${SIGNAGE_REMOTE:-}"
+[ -z "$REMOTE" ] && [ -f "$HOME/.signage-remote" ] && REMOTE="$(head -1 "$HOME/.signage-remote")"
+[ -z "$REMOTE" ] && REMOTE="gdrive:Foyer Signage"
 DEST="${SIGNAGE_DEST:-$HOME/Signage}"
 LOG="$HOME/signage-sync.log"
 

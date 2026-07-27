@@ -4,7 +4,10 @@
 # launchd runs this every 10 minutes. Best-effort: any failure exits quietly.
 set -u
 
-REMOTE="${SIGNAGE_REMOTE:-gdrive:Foyer Signage}"
+# Remote precedence: $SIGNAGE_REMOTE env > ~/.signage-remote file > default.
+REMOTE="${SIGNAGE_REMOTE:-}"
+[ -z "$REMOTE" ] && [ -f "$HOME/.signage-remote" ] && REMOTE="$(head -1 "$HOME/.signage-remote")"
+[ -z "$REMOTE" ] && REMOTE="gdrive:Foyer Signage"
 RCLONE="$(command -v rclone || true)"
 [ -x "${RCLONE:-/nonexistent}" ] || RCLONE=/usr/local/bin/rclone
 [ -x "$RCLONE" ] || exit 0
