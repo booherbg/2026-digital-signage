@@ -205,6 +205,11 @@ class Player:
         self.canvas.delete("all")
         self.canvas.create_image(self.w // 2, self.h // 2, image=photo)
         self.photo = photo
+        try:  # now-playing marker for status.sh (TCC-proof proof-of-life)
+            with open(os.path.join(HOME, ".signage-nowplaying"), "w") as f:
+                f.write(name)
+        except OSError:
+            pass
         if self.cfg["transition"] == "fade":
             self.fade_to(1.0)
 
