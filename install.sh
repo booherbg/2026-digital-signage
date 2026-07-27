@@ -69,6 +69,28 @@ EOF
 launchctl unload "$SYNC_PLIST" 2>/dev/null || true
 launchctl load "$SYNC_PLIST"
 
+# Self-update agent: pulls the latest main from GitHub once a day (no git
+# needed — tarball download; see update.sh). Failure never breaks the install.
+UPDATE_PLIST="$HOME/Library/LaunchAgents/com.farm.signage.update.plist"
+cat > "$UPDATE_PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.farm.signage.update</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>${DIR}/update.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>30</integer></dict>
+</dict>
+</plist>
+EOF
+launchctl unload "$UPDATE_PLIST" 2>/dev/null || true
+launchctl load "$UPDATE_PLIST"
+
 # Status agent: screenshot + heartbeat to Drive _status/ every 10 minutes.
 STATUS_PLIST="$HOME/Library/LaunchAgents/com.farm.signage.status.plist"
 cat > "$STATUS_PLIST" <<EOF

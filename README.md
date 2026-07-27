@@ -30,11 +30,19 @@ shuffle, hard cut, 24/7). Outside `hours` the screen shows black.
 
 ## One-time Mac setup (fresh machine, nothing pre-installed)
 
+No git required — pull the tarball with stock curl:
+
 ```sh
-git clone git@github.com:booherbg/2026-digital-signage.git
-cd 2026-digital-signage
+cd ~ && curl -fsSL https://codeload.github.com/booherbg/2026-digital-signage/tar.gz/main | tar xz
+mv 2026-digital-signage-main signage && cd signage
 ./setup.sh
 ```
+
+**Self-updating**: a daily launchd agent (4:30 AM) runs `update.sh`, which
+downloads the latest main-branch tarball, swaps files in place, and reloads
+the services — push to GitHub and every sign updates itself within a day.
+Run `./update.sh` manually to update immediately. Any failure (offline, bad
+download) keeps the current version running; log: `~/signage-update.log`.
 
 `setup.sh` assumes a bare Mac and walks every dependency:
 

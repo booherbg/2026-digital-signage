@@ -9,7 +9,13 @@ fail()  { printf '\033[31m%s\033[0m\n' "$*"; exit 1; }
 step "1/5 Command Line Tools (git, python3)"
 if ! xcode-select -p >/dev/null 2>&1; then
   xcode-select --install || true
-  fail "A dialog is installing Command Line Tools. When it finishes, run ./setup.sh again."
+  echo "A dialog should be installing Command Line Tools. When it finishes, run ./setup.sh again."
+  echo "If the dialog fails ('software not available from the update server' — common on"
+  echo "older macOS): download 'Command Line Tools for Xcode 14.2' manually from"
+  echo "  https://developer.apple.com/download/all/  (free Apple ID login),"
+  echo "install the dmg, then re-run ./setup.sh. python3 comes from this package —"
+  echo "the player cannot run without it."
+  exit 1
 fi
 echo "ok"
 
