@@ -20,10 +20,27 @@ fi
 echo "ok"
 
 step "2/5 python3 + tkinter"
-/usr/bin/python3 -c 'import tkinter' 2>/dev/null \
-  || fail "python3/tkinter missing — finish the Command Line Tools install, then re-run."
-echo "ok (Tk $(/usr/bin/python3 -c 'import tkinter;print(tkinter.TkVersion)'))"
-echo "   (optional: install Python 3 from python.org for Tk 8.6 = full-color rendering)"
+probe() {  # 10s watchdog: a broken python must not hang setup
+  "$1" -c "$2" 2>/dev/null &
+  local pid=$!
+  ( sleep 10; kill -9 "$pid" 2>/dev/null ) &
+  local watchdog=$!
+  wait "$pid" 2>/dev/null
+  local rc=$?
+  kill "$watchdog" 2>/dev/null
+  return $rc
+}
+GOODPY=""
+for cand in /Library/Frameworks/Python.framework/Versions/Current/bin/python3 \
+            /usr/local/bin/python3 /opt/homebrew/bin/python3 /usr/bin/python3; do
+  [ -x "$cand" ] || continue
+  echo "checking $cand ..."
+  probe "$cand" 'import tkinter' && { GOODPY="$cand"; break; }
+done
+[ -n "$GOODPY" ] || fail "No python with a working tkinter found (Apple's CLT python/Tk is
+broken on some machines). Fix: install Python 3.12 from python.org
+(macOS 64-bit universal2 installer) — it bundles its own Tk — then re-run ./setup.sh"
+echo "ok: $GOODPY (Tk $("$GOODPY" -c 'import tkinter;print(tkinter.TkVersion)'))"
 
 step "3/5 rclone"
 if ! command -v rclone >/dev/null 2>&1 && [ ! -x /usr/local/bin/rclone ]; then
